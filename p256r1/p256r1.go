@@ -11,53 +11,72 @@ import (
 	"github.com/nknorg/nkn/crypto/util"
 )
 
-func Init(algSet *util.CryptoAlgSet) {
-	algSet.Curve = elliptic.P256()
-	algSet.EccParams = *(algSet.Curve.Params())
-}
-
-func GenKeyPair(algSet *util.CryptoAlgSet) ([]byte, *big.Int, *big.Int, error) {
+func NewP256R1() (*Keypair, error) {
 	privateKey := new(ecdsa.PrivateKey)
-	privateKey, err := ecdsa.GenerateKey(algSet.Curve, rand.Reader)
-	if err != nil {
-		return nil, nil, nil, errors.New("Generate key pair error")
+	if privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader); err != nil {
+		return nil, errors.New("NewP256R1: Generate key pair error")
 	}
 
-	priKey := privateKey.D.Bytes()
-	return priKey, privateKey.PublicKey.X, privateKey.PublicKey.Y, nil
+	//TODO pk and sk alignment
+	pk := &P256R1PubKey{
+		X: privateKey.PublicKey.X.Bytes(),
+		Y: privateKey.PublicKey.Y.Bytes(),
+	}
+
+	sk := &P256R1PrivKey{
+		D: privateKey.D.Bytes(),
+	}
+
+	return &Keypair{
+		pk: pk,
+		sk: sk,
+	}, nil
 }
 
-func Sign(algSet *util.CryptoAlgSet, priKey []byte, data []byte) (*big.Int, *big.Int, error) {
-	digest := util.Hash(data)
+func (pk *P256R1PubKey) Verify(data []byte, signature []byte) error {
+	len := len(signature)
+	if len != util.SIGNATURELEN {
+		return fmt.Errorf("Verify: Unknown signature length: %d\n", len)
+	}
 
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.Curve = algSet.Curve
-	privateKey.D = big.NewInt(0)
-	privateKey.D.SetBytes(priKey)
+	r := new(big.Int).SetBytes(signature[:len/2])
+	s := new(big.Int).SetBytes(signature[len/2:])
 
-	r := big.NewInt(0)
-	s := big.NewInt(0)
+	digest := SHA256.Hash(data)
+
+	pub := new(ecdsa.PublicKey)
+	pub.Curve = elliptic.P256()
+
+	pub.X = new(big.Int).SetBits(pk.X)
+	pub.Y = new(big.Int).SetBits(pk.Y)
+
+	if !ecdsa.Verify(pub, digest[:], r, s) {
+		return errors.New("P256R1PubKey.Verify: failed.")
+	}
+
+	return nil
+}
+
+func (pk *P256R1PubKey) EqualTo(that PubKey) bool {
+	return pk.Equal(that)
+}
+
+func (sk *P256R1PrivKey) Sign(data []byte) ([]byte, error) {
+	digest := SHA256.Hash(data) // TODO  new func
+	privateKey := &ecdsa.PrivateKey{
+		Curve: elliptic.P256(),
+		D:     new(big.Int).SetBytes(priKey),
+	}
 
 	r, s, err := ecdsa.Sign(rand.Reader, privateKey, digest[:])
 	if err != nil {
-		fmt.Printf("Sign error\n")
-		return nil, nil, err
+		return nil, fmt.Errorf("Sign: p256r1 sign error: %v\n", err)
 	}
-	return r, s, nil
-}
 
-func Verify(algSet *util.CryptoAlgSet, X *big.Int, Y *big.Int, data []byte, r, s *big.Int) error {
-	digest := util.Hash(data)
+	signature := make([]byte, util.SIGNATURELEN)
 
-	pub := new(ecdsa.PublicKey)
-	pub.Curve = algSet.Curve
+	copy(signature[util.SIGNRLEN-r.Bytes():], r.Bytes())
+	copy(signature[util.SIGNATURELEN-s.Bytes():], s.Bytes())
 
-	pub.X = new(big.Int).Set(X)
-	pub.Y = new(big.Int).Set(Y)
-
-	if ecdsa.Verify(pub, digest[:], r, s) {
-		return nil
-	} else {
-		return errors.New("[Validation], Verify failed.")
-	}
+	return signature, nil
 }
