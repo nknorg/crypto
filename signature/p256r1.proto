@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package signature;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+
+message P256R1PubKey {
+	bytes X = 1;
+	bytes Y = 2;
+}
+
+message P256R1PrivKey {
+	bytes D = 1;
+}

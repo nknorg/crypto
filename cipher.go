@@ -5,8 +5,6 @@ import (
 	"crypto/cipher"
 	"errors"
 	"fmt"
-
-	. "github.com/nknorg/nkn/common"
 )
 
 func ToAesKey(pwd []byte) []byte {
@@ -19,7 +17,7 @@ func AesEncrypt(plaintext []byte, key []byte, iv []byte) ([]byte, error) {
 		return nil, fmt.Errorf("AesEncrypt: Invalid key. %v\n", err)
 	}
 
-	if len(plaintext) % block.BlockSize() {
+	if (len(plaintext) % block.BlockSize()) != 0 {
 		return nil, errors.New("AesEncrypt: input not full blocks.")
 	}
 	ciphertext := make([]byte, len(plaintext))
@@ -36,7 +34,7 @@ func AesDecrypt(ciphertext []byte, key []byte, iv []byte) ([]byte, error) {
 		return nil, fmt.Errorf("AesDecrypt: invalid key. %v\n", err)
 	}
 
-	if len(plaintext) % block.BlockSize() {
+	if (len(ciphertext) % block.BlockSize()) != 0 {
 		return nil, errors.New("AesDecrypt: input not full blocks.")
 	}
 	plaintext := make([]byte, len(ciphertext))
