@@ -32,3 +32,11 @@ type Keypair struct {
 	pk PubKey
 	sk PrivKey
 }
+
+func (kp *Keypair) PublicKey() PubKey {
+	return kp.pk
+}
+
+func (kp *Keypair) PrivateKey() PrivKey {
+	return kp.sk
+}
