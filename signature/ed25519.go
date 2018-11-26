@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 
-	"github.com/agl/ed25519"
+	"golang.org/x/crypto/ed25519"
 )
 
 func NewED25519() (*Keypair, error) {
@@ -28,11 +28,11 @@ func NewED25519() (*Keypair, error) {
 }
 
 func (pk *ED25519PubKey) Verify(data []byte, signature []byte) error {
-	pubKey := [32]byte{}
-	sig := [64]byte{}
-	copy(pubKey[:], pk.PK[0:32])
-	copy(sig[:], signature[0:64])
-	if !ed25519.Verify(&pubKey, data, &sig) {
+	//pubKey := [32]byte{}
+	//sig := [64]byte{}
+	//copy(pubKey[:], pk.PK[0:32])
+	//copy(sig[:], signature[0:64])
+	if !ed25519.Verify(pk.PK, data, signature) {
 		return errors.New("ED25519PubKey.Verify: failed.")
 	}
 
@@ -44,7 +44,13 @@ func (pk *ED25519PubKey) EqualTo(that PubKey) bool {
 }
 
 func (sk *ED25519PrivKey) Sign(data []byte) ([]byte, error) {
-	privKey := [64]byte{}
-	copy(privKey[:], sk.SK[0:64])
-	return ed25519.Sign(&privKey, data)[:], nil
+	//privKey := [64]byte{}
+	//copy(privKey[:], sk.SK[0:64])
+	return ed25519.Sign(sk.SK, data), nil
+}
+
+func (sk *ED25519PrivKey) PublicKey() PubKey {
+	return &ED25519PubKey{
+		PK: sk.SK[32:],
+	}
 }

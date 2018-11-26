@@ -17,6 +17,12 @@ func TestGenKey(t *testing.T) {
 	if !elliptic.P256().IsOnCurve(bigX, bigY) {
 		t.Errorf("TestGenKey: public key is not in curve")
 	}
+
+	pk := kp.PrivateKey().PublicKey()
+
+	if !pk.EqualTo(kp.PublicKey()) {
+		t.Errorf("TestGenKey: gen PublicKey from private key error")
+	}
 }
 
 func TestSign(t *testing.T) {
