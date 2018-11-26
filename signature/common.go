@@ -7,11 +7,10 @@ const (
 	SIGNRLEN      = 32
 	SIGNSLEN      = 32
 	SIGNATURELEN  = 64
-	NEGBIGNUMLEN  = 33
 )
 
 type PubKey interface {
-	//EqualTo(pk PubKey) bool
+	EqualTo(pk PubKey) bool
 	//VerifyAddress(addr string) error
 	//ToAddress() string
 	//Compress() //marshal
@@ -22,7 +21,7 @@ type PubKey interface {
 }
 
 type PrivKey interface {
-	//PubKey() PubKey
+	PublicKey() PubKey
 	Sign(data []byte) ([]byte, error)
 	Marshal() ([]byte, error)
 	Unmarshal(data []byte) error
