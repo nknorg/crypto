@@ -1,30 +1,20 @@
 package signature
 
-const (
-	HASHLEN       = 32
-	PRIVATEKEYLEN = 32
-	PUBLICKEYLEN  = 32
-	SIGNRLEN      = 32
-	SIGNSLEN      = 32
-	SIGNATURELEN  = 64
-)
-
 type PubKey interface {
 	EqualTo(pk PubKey) bool
-	//VerifyAddress(addr string) error
-	//ToAddress() string
-	//Compress() //marshal
-	//Decompress() //unmarshal
-	Verify(data []byte, signature []byte) error
+	Compress(isCommpressed bool) ([]byte, error)
+	DeCompress(encodeData []byte) error
 	Marshal() ([]byte, error)
 	Unmarshal(data []byte) error
+	Verify(data []byte, signature []byte) error
+	//ToAddress() string
 }
 
 type PrivKey interface {
 	PublicKey() PubKey
-	Sign(data []byte) ([]byte, error)
 	Marshal() ([]byte, error)
 	Unmarshal(data []byte) error
+	Sign(data []byte) ([]byte, error)
 }
 
 type Keypair struct {

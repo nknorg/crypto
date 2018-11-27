@@ -7,6 +7,12 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
+const (
+	ED25519_PUBLICKEYSIZE  = 32
+	ED25519_PRIVATEKEYSIZE = 64
+	ED25519_SIGNATURESIZE  = 64
+)
+
 func NewED25519() (*Keypair, error) {
 	pubKey, privKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {

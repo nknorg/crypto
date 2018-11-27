@@ -10,6 +10,14 @@ import (
 	"math/big"
 )
 
+const (
+	P256R1_PRIVATEKEYLEN = 32
+	P256R1_PUBLICKEYLEN  = 32
+	P256R1_SIGNRLEN      = 32
+	P256R1_SIGNSLEN      = 32
+	P256R1_SIGNATURELEN  = 64
+)
+
 func NewP256R1() (*Keypair, error) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -34,7 +42,7 @@ func NewP256R1() (*Keypair, error) {
 
 func (pk *P256R1PubKey) Verify(data []byte, signature []byte) error {
 	len := len(signature)
-	if len != SIGNATURELEN {
+	if len != P256R1_SIGNATURELEN {
 		return fmt.Errorf("Verify: Unknown signature length: %d\n", len)
 	}
 
@@ -72,10 +80,10 @@ func (sk *P256R1PrivKey) Sign(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("Sign: p256r1 sign error: %v\n", err)
 	}
 
-	signature := make([]byte, SIGNATURELEN)
+	signature := make([]byte, P256R1_SIGNATURELEN)
 
-	copy(signature[SIGNRLEN-len(r.Bytes()):], r.Bytes())
-	copy(signature[SIGNATURELEN-len(s.Bytes()):], s.Bytes())
+	copy(signature[P256R1_SIGNRLEN-len(r.Bytes()):], r.Bytes())
+	copy(signature[P256R1_SIGNATURELEN-len(s.Bytes()):], s.Bytes())
 
 	return signature, nil
 }
@@ -87,4 +95,30 @@ func (sk *P256R1PrivKey) PublicKey() PubKey {
 		X: bigX.Bytes(),
 		Y: bigY.Bytes(),
 	}
+}
+
+func (pk *P256R1PubKey) EncodePoint(isCommpressed bool) ([]byte, error) {
+	//if X is infinity, then Y cann't be computed, so here used "||"
+	if nil == pk.X || nil == pk.Y {
+		infinity := make([]byte, INFINITYLEN)
+		return infinity, nil
+	}
+
+	var encodedData []byte
+	copy(encodedData[COMPRESSEDLEN-len(pk.X):COMPRESSEDLEN], pk.X)
+
+	if isCommpressed {
+		encodedData = make([]byte, COMPRESSEDLEN)
+		if pk.Y[len(pk.Y)-1]&1 == 0 {
+			encodedData[0] = COMPEVENFLAG
+		} else {
+			encodedData[0] = COMPODDFLAG
+		}
+	} else {
+		encodedData = make([]byte, NOCOMPRESSEDLEN)
+		copy(encodedData[NOCOMPRESSEDLEN-len(pk.Y):], pk.Y)
+		encodedData[0] = NOCOMPRESSEDFLAG
+	}
+
+	return encodedData, nil
 }

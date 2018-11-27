@@ -48,3 +48,25 @@ func TestSign(t *testing.T) {
 		t.Errorf("TestSign: verify error.\n")
 	}
 }
+
+func TestCompress(t *testing.T) {
+	kp, err := NewP256R1()
+	if err != nil {
+		t.Errorf("TestCompress: NewP256R1 error: %v\n", err)
+	}
+
+	compressedX, err := kp.pk.(*P256R1PubKey).Compress(true)
+	if err != nil {
+		t.Errorf("TestCompress: Compress error: %v\n", err)
+	}
+
+	var deCompressX P256R1PubKey
+	if err = deCompressX.DeCompress(compressedX); err != nil {
+		t.Errorf("TestCompress: DeCompress error: %v\n", err)
+	}
+
+	if !deCompressX.EqualTo(kp.pk) {
+		t.Errorf("TestCompress: EqualTo error: %v\n", err)
+	}
+
+}

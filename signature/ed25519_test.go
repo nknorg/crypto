@@ -38,3 +38,25 @@ func TestSignVerify(t *testing.T) {
 		t.Errorf("TestSign: verify error,%v\n", err)
 	}
 }
+
+func TestED25519Compress(t *testing.T) {
+	kp, err := NewED25519()
+	if err != nil {
+		t.Errorf("TestCompress: NewED25519 error: %v\n", err)
+	}
+
+	compressedX, err := kp.pk.(*ED25519PubKey).Compress(true)
+	if err != nil {
+		t.Errorf("TestCompress: Compress error: %v\n", err)
+	}
+
+	var deCompressX ED25519PubKey
+	if err = deCompressX.DeCompress(compressedX); err != nil {
+		t.Errorf("TestCompress: DeCompress error: %v\n", err)
+	}
+
+	if !deCompressX.EqualTo(kp.pk) {
+		t.Errorf("TestCompress: EqualTo error: %v\n", err)
+	}
+
+}
