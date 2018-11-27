@@ -1,0 +1,19 @@
+hash: dbab76ac49868ee7d0ec9da47885af0bd8d510ec87aae693616eb764ffc25399
+updated: 2018-11-27T17:02:18.840123+08:00
+imports:
+- name: github.com/gogo/protobuf
+  version: 636bf0302bc95575d69441b25a2603156ffdddf1
+  subpackages:
+  - gogoproto
+  - proto
+  - protoc-gen-gogo/descriptor
+- name: golang.org/x/crypto
+  version: 4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06
+  repo: https://github.com/golang/crypto
+  vcs: git
+  subpackages:
+  - ed25519
+  - ed25519/internal/edwards25519
+  - ripemd160
+  - sha3
+testImports: []
